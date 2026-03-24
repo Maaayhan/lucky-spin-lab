@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ../.. && npm run build -w apps/client",
+  "outputDirectory": "dist",
+  "framework": null
+}
