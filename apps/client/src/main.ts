@@ -7,6 +7,7 @@ import { updateBalanceDisplay } from './ui/BalanceBar';
 import { updateResultBanner, showError } from './ui/ResultBanner';
 import { updateHistoryPanel } from './ui/HistoryPanel';
 import { renderRewardConfig } from './ui/RewardConfig';
+import { updateStatsPanel } from './ui/StatsPanel';
 import { INITIAL_BALANCE, PLAYER_ID, DEFAULT_BET, REWARD_TABLE } from '@lucky-spin-lab/shared';
 
 // ── Build HTML shell ─────────────────────────────────────────────────────────
@@ -28,13 +29,11 @@ app.innerHTML = `
         </div>
       </div>
 
-      <div class="canvas-wrapper">
+      <div class="canvas-wrapper" id="canvas-wrapper">
         <canvas id="spin-canvas"></canvas>
       </div>
 
-      <button class="spin-btn" id="spin-btn">
-        Spin
-      </button>
+      <button class="spin-btn" id="spin-btn">Spin</button>
 
       <div id="result-banner" class="result-banner">
         <span class="result-banner__placeholder">Spin to win!</span>
@@ -54,6 +53,11 @@ app.innerHTML = `
         </ul>
       </div>
 
+      <div class="panel-card">
+        <div class="panel-card__title">Session Stats</div>
+        <div id="stats-panel"><div class="history-empty">No spins yet</div></div>
+      </div>
+
       ${renderRewardConfig()}
     </div>
   </div>
@@ -67,31 +71,40 @@ app.innerHTML = `
 const CANVAS_SIZE = 420;
 const canvas = document.getElementById('spin-canvas') as HTMLCanvasElement;
 
-let scene: SpinScene | null = null;
-scene = new SpinScene(canvas, {
+const scene = new SpinScene(canvas, {
   width: CANVAS_SIZE,
   height: CANVAS_SIZE,
   onSpinComplete: () => {},
 });
 
-// ── Spin Logic ────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const spinBtn = document.getElementById('spin-btn') as HTMLButtonElement;
 const resetBtn = document.getElementById('reset-btn') as HTMLButtonElement;
+const canvasWrapper = document.getElementById('canvas-wrapper') as HTMLDivElement;
 
 function setSpinning(active: boolean): void {
   spinBtn.disabled = active;
-  if (active) {
-    spinBtn.innerHTML = `<span class="spinner"></span> Spinning…`;
-  } else {
-    spinBtn.innerHTML = 'Spin';
-  }
+  spinBtn.innerHTML = active ? `<span class="spinner"></span> Spinning…` : 'Spin';
 }
 
+function triggerWinFlash(): void {
+  canvasWrapper.classList.add('win-flash');
+  canvasWrapper.addEventListener('animationend', () => {
+    canvasWrapper.classList.remove('win-flash');
+  }, { once: true });
+}
+
+function refreshUI(): void {
+  const { history, balance } = useGameStore.getState();
+  updateHistoryPanel(history);
+  updateStatsPanel(history, INITIAL_BALANCE, balance);
+}
+
+// ── Spin Logic ────────────────────────────────────────────────────────────────
 spinBtn.addEventListener('click', async () => {
   const store = useGameStore.getState();
   if (store.spinStatus !== 'idle') return;
 
-  // Clear previous error / result
   showError(null);
   updateResultBanner(null);
   setSpinning(true);
@@ -104,15 +117,15 @@ spinBtn.addEventListener('click', async () => {
 
     const segmentIndex = getSegmentIndex(result.rewardId);
 
-    scene?.spinToSegment(segmentIndex, () => {
-      // Animation complete
+    scene.spinToSegment(segmentIndex, () => {
       useGameStore.getState().applyResult(result);
       useGameStore.getState().setSpinStatus('idle');
       updateBalanceDisplay(result.newBalance);
       updateResultBanner(result);
-      updateHistoryPanel(useGameStore.getState().history);
+      refreshUI();
       setSpinning(false);
-      scene?.playWinEffect();
+      scene.playWinEffect();
+      triggerWinFlash();
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Spin failed. Please try again.';
@@ -122,21 +135,18 @@ spinBtn.addEventListener('click', async () => {
   }
 });
 
+// ── Reset ─────────────────────────────────────────────────────────────────────
 resetBtn.addEventListener('click', async () => {
   try {
     await resetPlayer(PLAYER_ID);
-    useGameStore.getState().reset(INITIAL_BALANCE);
-    updateBalanceDisplay(INITIAL_BALANCE);
-    updateResultBanner(null);
-    updateHistoryPanel([]);
-    showError(null);
   } catch {
-    // Reset locally even if server call fails
-    useGameStore.getState().reset(INITIAL_BALANCE);
-    updateBalanceDisplay(INITIAL_BALANCE);
-    updateResultBanner(null);
-    updateHistoryPanel([]);
+    // fall through — reset locally regardless
   }
+  useGameStore.getState().reset(INITIAL_BALANCE);
+  updateBalanceDisplay(INITIAL_BALANCE);
+  updateResultBanner(null);
+  showError(null);
+  refreshUI();
 });
 
 // ── Keyboard shortcut: Space to spin ─────────────────────────────────────────

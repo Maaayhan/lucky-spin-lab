@@ -350,6 +350,70 @@ canvas {
   margin-right: 6px;
 }
 
+/* ── Stats Panel ── */
+.stat-summary {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 0.8rem;
+}
+
+.stat-row__label {
+  width: 72px;
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+.stat-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.stat-row__count {
+  width: 28px;
+  text-align: right;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.stat-row__pct {
+  width: 32px;
+  text-align: right;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+/* ── Win flash animation ── */
+@keyframes winFlash {
+  0%   { box-shadow: 0 0 0px rgba(255,215,0,0); }
+  40%  { box-shadow: 0 0 40px rgba(255,215,0,0.6); }
+  100% { box-shadow: 0 0 0px rgba(255,215,0,0); }
+}
+
+.canvas-wrapper.win-flash {
+  animation: winFlash 0.8s ease-out;
+}
+
 /* ── Footer ── */
 .footer {
   width: 100%;

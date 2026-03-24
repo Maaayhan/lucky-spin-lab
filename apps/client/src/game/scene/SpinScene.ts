@@ -37,13 +37,11 @@ export class SpinScene {
     this.wheel = new Wheel(this.RADIUS);
     this.wheelContainer.addChild(this.wheel);
 
-    // Pointer (at the top, pointing down)
+    // Pointer added to stage (NOT wheelContainer) so it stays fixed while wheel spins
     const pointer = new Pointer(this.RADIUS);
-    // Pointer sits above the wheel at the top
-    pointer.rotation = Math.PI; // flip so it points DOWN toward wheel
-    pointer.x = 0;
-    pointer.y = 0;
-    this.wheelContainer.addChild(pointer);
+    pointer.x = options.width / 2;
+    pointer.y = options.height / 2;
+    this.app.stage.addChild(pointer);
 
     // Background glow circle
     this.drawGlowBackground();

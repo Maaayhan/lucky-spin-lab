@@ -8,21 +8,22 @@ export class Pointer extends PIXI.Container {
 
   private draw(radius: number): void {
     const g = new PIXI.Graphics();
-    const pointerHeight = 28;
+    const pointerHeight = 26;
     const pointerWidth = 16;
 
-    // Pointer triangle pointing downward toward the wheel
+    // Tip points DOWN into the wheel rim (at -radius), base sits above rim
     g.beginFill(0xffd700, 1);
-    g.lineStyle(2, 0xffa500, 1);
-    g.moveTo(0, radius + pointerHeight);        // tip (pointing into wheel)
-    g.lineTo(-pointerWidth / 2, radius + 2);   // left base
-    g.lineTo(pointerWidth / 2, radius + 2);    // right base
+    g.lineStyle(2, 0xe6900a, 1);
+    g.moveTo(0, -radius + 4);                       // tip — just inside rim
+    g.lineTo(-pointerWidth / 2, -(radius + pointerHeight)); // top-left base
+    g.lineTo(pointerWidth / 2, -(radius + pointerHeight));  // top-right base
     g.closePath();
     g.endFill();
 
-    // Small circle at base
+    // Circle cap at the base
     g.beginFill(0xffa500, 1);
-    g.drawCircle(0, radius + 4, 5);
+    g.lineStyle(0);
+    g.drawCircle(0, -(radius + pointerHeight), 6);
     g.endFill();
 
     this.addChild(g);

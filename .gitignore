@@ -5,3 +5,8 @@ dist/
 *.log
 .DS_Store
 coverage/
+# Shared package — TypeScript source only, no build output
+packages/shared/src/**/*.js
+packages/shared/src/**/*.js.map
+packages/shared/src/**/*.d.ts
+packages/shared/src/**/*.d.ts.map
