@@ -1,6 +1,8 @@
 import type { SpinRequest, SpinResponse, PlayerState } from '@lucky-spin-lab/shared';
 
-const BASE_URL = '/api';
+// In dev: VITE_API_BASE_URL is not set → uses Vite proxy (/api → localhost:3001)
+// In production: VITE_API_BASE_URL = https://your-render-app.onrender.com
+const BASE_URL = (import.meta.env['VITE_API_BASE_URL'] ?? '') + '/api';
 
 export async function postSpin(request: SpinRequest): Promise<SpinResponse> {
   const res = await fetch(`${BASE_URL}/spin`, {
